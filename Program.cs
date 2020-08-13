@@ -34,7 +34,7 @@ namespace MultiProcessForOrders
                 var t = new Thread(NewOrder);
                 t.Start();
 
-                Thread.Sleep(10000);
+                Thread.Sleep(1000000);
             }
         }
 
@@ -55,9 +55,10 @@ namespace MultiProcessForOrders
                 ordersToHandle = orderQueue
                         //.Where(x => !customerInQueue.Contains(x.CustomerId))
                         .Where(x=>x.IsProcessing==false)
-                     .GroupBy(x => x.CustomerId)
+                     .GroupBy(x => x.CustomerId).ToList();
                      ;
-                    ordersToHandle.Select(x=>x.Select(y=>y.IsProcessing=true));
+                    orderQueue.Select(x=>{x.IsProcessing=true;return x;}).ToList();
+                    //ordersToHandle.Select(x=>x.Select(y=>y.IsProcessing=true));
                 //每个用户创建一个线程
                 customerInQueue.AddRange(ordersToHandle.Select(x => x.Key));
                     //Log("正在处理的用户列表:"+string.Join(" ",customerInQueue));
@@ -87,10 +88,10 @@ namespace MultiProcessForOrders
             var orders = state as List<Order>;
             Debug.Assert(orders.Select(x => x.CustomerId).Distinct().Count() == 1, "获取的订单应该属于同一个客户");
             string customerId = orders.First().CustomerId;
-            Log($"  {Thread.CurrentThread.ManagedThreadId}        1正在处理客户[{customerId}]的订单");
+            Log($"{Thread.CurrentThread.ManagedThreadId}        1正在处理客户[{customerId}]的订单");
             foreach (var order in orders)
             {
-                Log($"        2正在处理订单:{order.ToString()}");
+                Log($"{Thread.CurrentThread.ManagedThreadId}        2正在处理订单:{order.ToString()}");
                 Thread.Sleep(3000);
 
             }
@@ -100,15 +101,16 @@ namespace MultiProcessForOrders
         }
         static void Log(string message)
         { 
-            Console.WriteLine($"{Thread.GetCurrentProcessorId()}{message}");
+            Console.WriteLine($"{message}");
             }
         static IList<Order> orderQueue = new List<Order>();
         private static void NewOrder()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 20; i++)
             {
-                Thread.Sleep(1007);
-                var order = new Order { CustomerId = "customer_" + i };
+                var index=i%4;
+                Thread.Sleep(237);
+                var order = new Order { CustomerId = "customer_" + index };
                 orderQueue.Add(order);
                 Console.WriteLine($"创建新订单:[{order}]");
             }
