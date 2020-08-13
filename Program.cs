@@ -79,7 +79,7 @@ namespace MultiProcessForOrders
                     }
                 }
            
-            Thread.Sleep(10000);
+            Thread.Sleep(6000);
             }
         }
 
@@ -88,10 +88,11 @@ namespace MultiProcessForOrders
             var orders = state as List<Order>;
             Debug.Assert(orders.Select(x => x.CustomerId).Distinct().Count() == 1, "获取的订单应该属于同一个客户");
             string customerId = orders.First().CustomerId;
-            Log($"{Thread.CurrentThread.ManagedThreadId}        1正在处理客户[{customerId}]的订单");
+        //    Log($"{ Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(2,'0')}     处理客户{customerId}的订单");
             foreach (var order in orders)
             {
-                Log($"{Thread.CurrentThread.ManagedThreadId}        2正在处理订单:{order.ToString()}");
+                var space=new string(' ',Convert.ToInt32( customerId)*4);
+                Log($"{ Thread.CurrentThread.ManagedThreadId.ToString().PadLeft(2, '0')}    {space}处理订单:{order.ToString()}");
                 Thread.Sleep(3000);
 
             }
@@ -110,7 +111,7 @@ namespace MultiProcessForOrders
             {
                 var index=i%4;
                 Thread.Sleep(237);
-                var order = new Order { CustomerId = "customer_" + index };
+                var order = new Order { CustomerId = $"{index}" };
                 orderQueue.Add(order);
                 Console.WriteLine($"创建新订单:[{order}]");
             }
@@ -123,7 +124,7 @@ namespace MultiProcessForOrders
 
     public class Order
     {
-        public string OrderId { get; set; } = "Order_" + DateTime.Now.ToString("ddHH-mm-ss-fff");
+        public string OrderId { get; set; } = $"{DateTime.Now.ToString("ssfff")}";
         public string CustomerId { get; set; }
         public bool IsProcessing { get;set;}=false;
         public override string ToString()
